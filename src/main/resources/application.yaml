@@ -1,0 +1,11 @@
+spring.cloud.stream.function.bindings.sendToTanzuObservability-in-0: input # https://cloud.spring.io/spring-cloud-static/spring-cloud-stream/current/reference/html/spring-cloud-stream.html#_functional_binding_names
+
+tanzu-observability:
+  metric-name:
+  source:
+  metric-json-path:
+  timestamp-json-path:
+#  point-tags-json-paths-point-value: (Mapping to Map<String, String> if value is empty)
+  wavefront-domain:
+  wavefront-token:
+  wavefront-proxy-url:
