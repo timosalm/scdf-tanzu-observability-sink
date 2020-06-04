@@ -24,40 +24,28 @@ You can also configure the application via environment variables.
 The configuration property `tanzu-observability.wavefront-proxy-url`corresponds for example to the environment 
 variable `TANZU_OBSERVABILITY_METRIC_NAME`.
 
-### Spring Cloud Data Flow
+### Spring Cloud Data Flow (on Cloud Foundry)
 
-#### Add the sink to your SCDF instance
-##### Option A: via SCDF dashboard
-1. Navigate to "Apps" and click on the button with the label "Add Application" 
-2. Select "Register one or more applications"
-3. Enter the Name (e.g. scdf-tanzu-observability-sink)
-4. Select type "Source", 
-5. Add the URL to a JAR archive of the sink.The JAR archive of the latest source code in the master branch is available 
-via the following URL: https://github.com/tsalm-pivotal/scdf-tanzu-observability-sink/raw/releases/scdf-tanzu-observability-sink-0.0.1-SNAPSHOT.jar
-6. Click on the button with the label "Register the application(s)"
+#### How to add the sink to your SCDF instance and deploy a sample stream 
 
-##### Option B: via SCDF shell
+We will use the SCDF shell to add the sink and deploy a sample stream, but it's possible via the SCDF dashboard, too.
+
 1. Start your shell (e.g. with the command `java -jar spring-cloud-dataflow-shell-2.4.2.RELEASE.jar`)
 2. Set your SCDF instance (e.q. with command `dataflow config server https://my-data-flow-server.com/`)
-3. Add the sink with the command `app register --name myname --type sink --uri https://example.com/mysink-0.0.1-SNAPSHOT.jar`.
+3. Add the sink with the command `app register --name tanzu-observability-sink --type sink --uri https://example.com/mysink-0.0.1-SNAPSHOT.jar`.
 The JAR archive of the latest source code in the master branch is available 
 via the following URL: https://github.com/tsalm-pivotal/scdf-tanzu-observability-sink/raw/releases/scdf-tanzu-observability-sink-0.0.1-SNAPSHOT.jar. 
 So you can the sink without modifications with the command `app register --name scdf-tanzu-observability-sink --type sink --uri https://github.com/tsalm-pivotal/scdf-tanzu-observability-sink/raw/releases/scdf-tanzu-observability-sink-0.0.1-SNAPSHOT.jar`
-
-#### Create a sample stream
-##### Option A: via SCDF dashboard
-1. Navigate to "Streams" and click on the button with the label "Create stream(s)" 
-2. Put the stream definition from "Option B" in the text field with the placeholder "Enter stream definition ...". 
-3. Click on the button with the label "Create stream(s)"
-4. Enter a name for your stream and click on the button with the label "Create stream"
-5. In the list of stream click on the "Play" icon to deploy the stream.
-6. Click on the button with the label "Deploy Stream" below the table with properties to finally deploy the stream.
-
-
-    - If you want to send the metrics **directly to your wavefront environment**, put the following stream definition 
-    with your wavefront information in the text field with the placeholder "Enter stream definition ...": 
-    `http | tanzu-observability-sink`
-    - If you want to send the metrics **to a wavefront proxy**, put the following stream definition 
-      with your wavefront information in the text field with the placeholder "Enter stream definition ...": 
-      `http | tanzu-observability-sink`
-##### Option B: via SCDF shell
+4. 
+    - If you want to send the metrics **directly to your wavefront environment**, execute the following command with 
+    your wavefront information in the stream definition:
+    `stream create --name http-tanzu-observability-sink --definition "http | tanzu-observability-sink --tanzu-observability.wavefront-token='MY_TOKEN' --tanzu-observability.metric-json-path='$.mileage' --tanzu-observability.source='vehicle' --tanzu-observability.wavefront-domain='MY_WAVEFRONT_DOMAIN' --tanzu-observability.metric-name='vehicle-mileage' --JBP_CONFIG_OPEN_JDK_JRE='{jre: {version: 11.+}}'"`
+    - If you want to send the metrics **to a wavefront proxy**, execute the following command with your wavefront 
+    information in the stream definition:
+    `stream create --name http-tanzu-observability-sink --definition "http | tanzu-observability-sink --tanzu-observability.wavefront-proxy='MY_WAVEFRONT_PROXY_URL' --tanzu-observability.metric-json-path='$.mileage' --tanzu-observability.source='vehicle' --tanzu-observability.metric-name='vehicle-mileage' --JBP_CONFIG_OPEN_JDK_JRE='{jre: {version: 11.+}}'"`
+5. Deploy the stream with the command `stream deploy http-tanzu-observability-sink --properties "deployer.*.cloudfoundry.use-spring-application-json=false"`  
+Hint: The runtime for the sink application will be provided by a (Java buildpack)[https://github.com/cloudfoundry/java-buildpack]. 
+The JRE version of the buildpack (default version 8) is configurable via the `JBP_CONFIG_OPEN_JDK_JRE` environment 
+variable. In the used SCDF version 2.4.2.RELEASE the configuration `deployer.*.cloudfoundry.use-spring-application-json=false` 
+is required for the buildpack to recognize the env variable JBP_CONFIG_OPEN_JDK_JRE.
+6. Call the endpoint of the http consumer (e.g. via `curl https://deployed-app-url.com/ -H "Content-type: application/json" -d "{ mileage: 14283 }"`) and view the metric in Tanzu Observability by Wavefront.

@@ -22,6 +22,7 @@ public class ObservabilitySink {
     @Bean
     Consumer<String> sendToTanzuObservability() {
         return inputJsonString -> {
+            log.info("Received event");
             var observabilityFormat = new WavefrontFormat(configurationProperties, inputJsonString);
             String formattedString;
             try {
