@@ -21,7 +21,7 @@ You can configure the application via the following configuration properties (se
 `tanzu-observability.wavefront-proxy-url` | yes (recommended), if `wavefront-proxy-domain` is not set | http://wavefront-proxy.apps.internal:2878 | The URL of the wavefront proxy  | |
 
 You can also configure the application via environment variables.
-The configuration property `tanzu-observability.wavefront-proxy-url`corresponds for example to the environment 
+The configuration property `tanzu-observability.metric-name`corresponds for example to the environment 
 variable `TANZU_OBSERVABILITY_METRIC_NAME`.
 
 ### Spring Cloud Data Flow (on Cloud Foundry)
